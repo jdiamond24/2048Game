@@ -3,6 +3,11 @@ import Tile from "./Tile.js"
 
 const gameBoard = document.getElementById("game-board") 
 
+let highScore = localStorage.getItem('highScore') || 0;
+document.getElementById('high-score').textContent = highScore;
+
+let score = 0
+
 const grid = new Grid(gameBoard)
 grid.randomEmptyCell().tile = new Tile(gameBoard)
 grid.randomEmptyCell().tile = new Tile(gameBoard)
@@ -55,7 +60,7 @@ async function handleInput(e) {
 
     if(!canMoveUp() && !canMoveDown() && !canMoveRight() && !canMoveRight()) {
         newTile.waitForTransition(true).then(() => {
-            alert("You Lose")
+            alert("You Lose. Final Score: " + score)
         })
         return
     }
@@ -95,6 +100,7 @@ function slideTiles(cells) {
             if(lastValidCell != null) {
                 promises.push(cell.tile.waitForTransition())
                 if(lastValidCell.tile != null) {
+                    score += lastValidCell.tile.value + cell.tile.value;
                     lastValidCell.mergeTile = cell.tile
                 } else {
                     lastValidCell.tile = cell.tile
@@ -103,7 +109,15 @@ function slideTiles(cells) {
             }
         }
         return promises
-    }))
+    })).then(() => {
+        document.getElementById("score").textContent = score;
+
+        if (score > highScore) {
+            highScore = score;
+            localStorage.setItem('highScore', highScore);
+            document.getElementById('high-score').textContent = highScore; // Update high score display
+        }
+    });
 }
 
 function canMoveUp() {
